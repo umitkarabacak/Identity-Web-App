@@ -31,6 +31,7 @@ namespace WebAPp.Pages
             var roleStandart = "Standart";
             var roleSupplier = "Supplier";
             var roleAdmin = "Admin";
+            var allRoleNames = new string[] { roleStandart, roleAdmin, roleSupplier };
 
             var userUmit = new AppUser
             {
@@ -54,8 +55,8 @@ namespace WebAPp.Pages
             var roles = await _roleManager.Roles.ToListAsync();
             if (!roles.Any())
             {
-                var standartRole = new AppRole() { Name = roleStandart};
-                var supplierRole = new AppRole() { Name = roleSupplier};
+                var standartRole = new AppRole() { Name = roleStandart };
+                var supplierRole = new AppRole() { Name = roleSupplier };
                 var adminRole = new AppRole() { Name = roleAdmin };
 
                 var standartRoleCreatedResult = await _roleManager.CreateAsync(standartRole);
@@ -70,6 +71,24 @@ namespace WebAPp.Pages
                 if (!adminRoleCreatedResult.Succeeded)
                     return;
             }
+
+            var user = await _userManager.FindByEmailAsync(emailAddress);
+            if (user is null)
+                return;
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+            if (!userRoles.Any())
+            {
+                var createAdminRolesResult = await _userManager.AddToRoleAsync(user, roleAdmin);
+                if (!createAdminRolesResult.Succeeded)
+                    return;
+
+                //var addRolesResult = await _userManager.AddToRolesAsync(user, allRoleNames);
+                //if (!addRolesResult.Succeeded)
+                //    return;
+            }
+
+
         }
     }
 }
