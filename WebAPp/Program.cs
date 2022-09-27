@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebAPp.Contexts;
 
@@ -5,6 +6,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+builder.Services.AddIdentity<AppUser,AppRole>()
+    .AddEntityFrameworkStores<ProjectContext>()
+    .AddDefaultTokenProviders();
 
 builder.Services.AddDbContext<ProjectContext>(options =>
 {
@@ -22,9 +27,12 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
