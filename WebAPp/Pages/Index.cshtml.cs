@@ -11,17 +11,20 @@ namespace WebAPp.Pages
         private readonly UserManager<AppUser> _userManager;
         private readonly RoleManager<AppRole> _roleManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly ProjectContext _projectContext;
 
         public IndexModel(ILogger<IndexModel> logger
             , UserManager<AppUser> userManager
             , RoleManager<AppRole> roleManager
-            , SignInManager<AppUser> signInManager)
+            , SignInManager<AppUser> signInManager
+            , ProjectContext projectContext)
         {
             _logger = logger;
 
             _userManager = userManager;
             _roleManager = roleManager;
             _signInManager = signInManager;
+            _projectContext = projectContext;
         }
 
         public async Task OnGet()
@@ -79,16 +82,30 @@ namespace WebAPp.Pages
             var userRoles = await _userManager.GetRolesAsync(user);
             if (!userRoles.Any())
             {
-                var createAdminRolesResult = await _userManager.AddToRoleAsync(user, roleAdmin);
-                if (!createAdminRolesResult.Succeeded)
+                var adminRole = await _roleManager.FindByNameAsync(roleAdmin);
+                var adminRoleInserRequest = new UserRole
+                {
+                    UserId = user.Id,
+                    RoleId = adminRole.Id,
+                    StartDate = DateTime.Now,
+                    DueDate = DateTime.Now.AddMonths(1)
+                };
+                await _projectContext.UserRoles.AddAsync(adminRoleInserRequest);
+                var createdAdminRoleResult = await _projectContext.SaveChangesAsync();
+                if (createdAdminRoleResult <= 0)
                     return;
+
+                //var createAdminRolesResult = await _userManager.AddToRoleAsync(user, roleAdmin);
+                //if (!createAdminRolesResult.Succeeded)
+                //    return;
 
                 //var addRolesResult = await _userManager.AddToRolesAsync(user, allRoleNames);
                 //if (!addRolesResult.Succeeded)
                 //    return;
             }
+            userRoles = await _userManager.GetRolesAsync(user);
 
-
+            _logger.LogInformation(System.Text.Json.JsonSerializer.Serialize(userRoles));
         }
     }
 }

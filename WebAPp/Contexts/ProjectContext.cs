@@ -11,6 +11,16 @@ namespace WebAPp.Contexts
         {
 
         }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            builder.Entity<UserRole>(b =>
+            {
+                b.HasKey(ur => new { ur.UserId, ur.RoleId });
+            });
+
+            base.OnModelCreating(builder);
+        }
     }
 
     public class AppUser : IdentityUser<Guid>
